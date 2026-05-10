@@ -62,7 +62,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "简历内容过短，无法生成有效的面试" }, { status: 400 });
     }
 
-    const sessionId = await createSession(materialTexts);
+    const userId = (formData.get("userId") as string) || "default";
+    const sessionId = await createSession(userId, materialTexts);
 
     const systemPrompt = buildAttackPlanPrompt(materialTexts);
     let attackPlanJson: string;

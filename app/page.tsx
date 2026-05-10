@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import FileUpload from "@/components/FileUpload";
 import SessionList from "@/components/SessionList";
+import { getUserId } from "@/lib/client";
 import type { SessionListItem } from "@/types";
 
 export default function HomePage() {
@@ -13,7 +14,8 @@ export default function HomePage() {
   const [sessions, setSessions] = useState<SessionListItem[]>([]);
 
   useEffect(() => {
-    fetch("/api/history")
+    const uid = getUserId();
+    fetch(`/api/history?userId=${encodeURIComponent(uid)}`)
       .then((r) => r.json())
       .then(setSessions)
       .catch(() => {});
@@ -37,6 +39,7 @@ export default function HomePage() {
       for (const [key, file] of Object.entries(files)) {
         formData.append(key, file);
       }
+      formData.append("userId", getUserId());
 
       const res = await fetch("/api/sessions", {
         method: "POST",

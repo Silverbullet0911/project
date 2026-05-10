@@ -1,11 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { listSessions } from "@/lib/db";
 import type { SessionListItem } from "@/types";
 
-export async function GET() {
-  const sessions = await listSessions();
+export async function GET(request: NextRequest) {
+  const userId = request.nextUrl.searchParams.get("userId") || "default";
+  const sessions = await listSessions(userId);
   const items: SessionListItem[] = sessions.map((s) => {
     const materials = JSON.parse(s.material_texts || "{}");
     return {

@@ -28,6 +28,7 @@ export async function getDb(): Promise<Database> {
   db.run(`
     CREATE TABLE IF NOT EXISTS sessions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL DEFAULT '',
       status TEXT NOT NULL DEFAULT 'preparing',
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       material_texts TEXT NOT NULL DEFAULT '{}',
@@ -35,6 +36,9 @@ export async function getDb(): Promise<Database> {
       debrief_report TEXT
     )
   `);
+
+  // 迁移旧表：无 user_id 列的数据库加一列
+  try { db.run("ALTER TABLE sessions ADD COLUMN user_id TEXT NOT NULL DEFAULT ''"); } catch {}
 
   db.run(`
     CREATE TABLE IF NOT EXISTS messages (
@@ -65,9 +69,9 @@ export function saveDb(): void {
   fs.writeFileSync(DB_PATH, buffer);
 }
 
-export async function createSession(materialTexts: Record<string, string>): Promise<number> {
+export async function createSession(userId: string, materialTexts: Record<string, string>): Promise<number> {
   const d = await getDb();
-  d.run("INSERT INTO sessions (material_texts, status) VALUES (?, 'preparing')", [JSON.stringify(materialTexts)]);
+  d.run("INSERT INTO sessions (user_id, material_texts, status) VALUES (?, ?, 'preparing')", [userId, JSON.stringify(materialTexts)]);
   saveDb();
   const result = d.exec("SELECT MAX(id) as id FROM sessions");
   return (result[0].values[0][0] as number);
@@ -105,10 +109,11 @@ export async function getSession(sessionId: number): Promise<{
   return null;
 }
 
-export async function listSessions(): Promise<{ id: number; status: string; created_at: string; material_texts: string }[]> {
+export async function listSessions(userId: string): Promise<{ id: number; status: string; created_at: string; material_texts: string }[]> {
   const d = await getDb();
   const results: any[] = [];
-  const stmt = d.prepare("SELECT id, status, created_at, material_texts FROM sessions ORDER BY created_at DESC");
+  const stmt = d.prepare("SELECT id, status, created_at, material_texts FROM sessions WHERE user_id = ? ORDER BY created_at DESC");
+  stmt.bind([userId]);
   while (stmt.step()) {
     results.push(stmt.getAsObject());
   }
