@@ -10,25 +10,39 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
 
-    const fileFields = ["resume", "notification", "past_exams", "statement", "transcript"];
-    const files: { field: string; file: File }[] = [];
+    const fieldKeys = ["resume", "notification", "past_exams", "statement", "transcript"];
+    const materialTexts: Record<string, string> = {};
 
-    for (const field of fileFields) {
-      const file = formData.get(field);
-      if (file && file instanceof File) {
-        files.push({ field, file });
+    for (const field of fieldKeys) {
+      const values = formData.getAll(field);
+      let text = "";
+
+      for (const val of values) {
+        if (typeof val === "string" && val.trim()) {
+          text = text ? text + "\n" + val.trim() : val.trim();
+        }
       }
+
+      // 解析该字段的 PDF 文件
+      const fileValues = values.filter((v) => v instanceof File);
+      if (fileValues.length > 0) {
+        try {
+          const parsed = await parseUploadedFiles(
+            fileValues.map((f) => ({ field, file: f as File }))
+          );
+          if (parsed[field]) {
+            text = text ? text + "\n" + parsed[field] : parsed[field];
+          }
+        } catch (e: any) {
+          return NextResponse.json({ error: `文件解析失败(${field}): ${e.message}` }, { status: 400 });
+        }
+      }
+
+      if (text) materialTexts[field] = text;
     }
 
-    if (!files.some((f) => f.field === "resume")) {
-      return NextResponse.json({ error: "简历为必选项" }, { status: 400 });
-    }
-
-    let materialTexts: Record<string, string>;
-    try {
-      materialTexts = await parseUploadedFiles(files);
-    } catch (e: any) {
-      return NextResponse.json({ error: `文件解析失败: ${e.message}` }, { status: 400 });
+    if (!materialTexts.resume || materialTexts.resume.trim().length < 20) {
+      return NextResponse.json({ error: "简历为必选项，内容不能过短" }, { status: 400 });
     }
 
     if (!materialTexts.resume || materialTexts.resume.trim().length < 50) {

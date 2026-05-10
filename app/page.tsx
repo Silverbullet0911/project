@@ -19,12 +19,15 @@ export default function HomePage() {
       .catch(() => {});
   }, []);
 
-  const handleUpload = useCallback(async (files: Record<string, File>) => {
+  const handleUpload = useCallback(async (texts: Record<string, string>, files: Record<string, File>) => {
     setUploading(true);
     setError("");
 
     try {
       const formData = new FormData();
+      for (const [key, text] of Object.entries(texts)) {
+        formData.append(key, text);
+      }
       for (const [key, file] of Object.entries(files)) {
         formData.append(key, file);
       }
