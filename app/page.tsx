@@ -19,6 +19,12 @@ export default function HomePage() {
       .catch(() => {});
   }, []);
 
+  const handleDelete = useCallback(async (id: number) => {
+    const res = await fetch(`/api/sessions/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("删除失败");
+    setSessions((prev) => prev.filter((s) => s.id !== id));
+  }, []);
+
   const handleUpload = useCallback(async (texts: Record<string, string>, files: Record<string, File>) => {
     setUploading(true);
     setError("");
@@ -66,7 +72,7 @@ export default function HomePage() {
 
         <div className="bg-surface rounded-2xl shadow-sm border border-border p-6">
           <h2 className="text-lg font-semibold mb-4 text-text-primary">面试历史</h2>
-          <SessionList sessions={sessions} />
+          <SessionList sessions={sessions} onDelete={handleDelete} />
         </div>
       </div>
     </main>

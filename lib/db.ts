@@ -138,6 +138,14 @@ export async function getMessages(sessionId: number): Promise<{ id: number; role
   return results;
 }
 
+export async function deleteSession(sessionId: number): Promise<boolean> {
+  const d = await getDb();
+  d.run("DELETE FROM messages WHERE session_id = ?", [sessionId]);
+  d.run("DELETE FROM sessions WHERE id = ?", [sessionId]);
+  saveDb();
+  return true;
+}
+
 export async function getPastWeaknessCoverage(): Promise<string[]> {
   const d = await getDb();
   const pastWeaknesses: string[] = [];

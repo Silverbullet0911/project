@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { getSession, getMessages } from "@/lib/db";
+import { getSession, getMessages, deleteSession } from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
@@ -34,4 +34,22 @@ export async function GET(
       created_at: m.created_at,
     })),
   });
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const sessionId = parseInt(params.id, 10);
+  if (isNaN(sessionId)) {
+    return NextResponse.json({ error: "无效的会话ID" }, { status: 400 });
+  }
+
+  const session = await getSession(sessionId);
+  if (!session) {
+    return NextResponse.json({ error: "会话不存在" }, { status: 404 });
+  }
+
+  await deleteSession(sessionId);
+  return NextResponse.json({ success: true });
 }
