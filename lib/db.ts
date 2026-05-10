@@ -67,12 +67,10 @@ export function saveDb(): void {
 
 export async function createSession(materialTexts: Record<string, string>): Promise<number> {
   const d = await getDb();
-  const stmt = d.prepare("INSERT INTO sessions (material_texts, status) VALUES (?, 'preparing')");
-  stmt.bind([JSON.stringify(materialTexts)]);
-  stmt.step();
-  stmt.free();
+  d.run("INSERT INTO sessions (material_texts, status) VALUES (?, 'preparing')", [JSON.stringify(materialTexts)]);
   saveDb();
-  return (d.exec("SELECT last_insert_rowid() as id")[0].values[0][0] as number);
+  const result = d.exec("SELECT MAX(id) as id FROM sessions");
+  return (result[0].values[0][0] as number);
 }
 
 export async function updateSessionAttackPlan(sessionId: number, attackPlan: object): Promise<void> {
@@ -122,12 +120,10 @@ export async function insertMessage(
   sessionId: number, role: string, content: string, topic?: string
 ): Promise<number> {
   const d = await getDb();
-  const stmt = d.prepare("INSERT INTO messages (session_id, role, content, topic) VALUES (?, ?, ?, ?)");
-  stmt.bind([sessionId, role, content, topic || null]);
-  stmt.step();
-  stmt.free();
+  d.run("INSERT INTO messages (session_id, role, content, topic) VALUES (?, ?, ?, ?)", [sessionId, role, content, topic || null]);
   saveDb();
-  return (d.exec("SELECT last_insert_rowid() as id")[0].values[0][0] as number);
+  const result = d.exec("SELECT MAX(id) as id FROM messages");
+  return (result[0].values[0][0] as number);
 }
 
 export async function getMessages(sessionId: number): Promise<{ id: number; role: string; content: string; topic: string | null; created_at: string }[]> {
