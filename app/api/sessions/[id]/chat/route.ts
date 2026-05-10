@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest } from "next/server";
 import { getSession, insertMessage, getMessages, updateSessionAttackPlan } from "@/lib/db";
 import { claudeStream } from "@/lib/claude";

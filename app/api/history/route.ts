@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { listSessions } from "@/lib/db";
 import type { SessionListItem } from "@/types";

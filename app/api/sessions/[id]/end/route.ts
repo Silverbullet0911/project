@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { getSession, getMessages, completeSession } from "@/lib/db";
 import { claudeComplete } from "@/lib/claude";

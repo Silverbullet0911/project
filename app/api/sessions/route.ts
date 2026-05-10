@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { parseUploadedFiles } from "@/lib/pdf";
 import { createSession, updateSessionAttackPlan } from "@/lib/db";
