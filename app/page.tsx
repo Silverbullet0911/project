@@ -4,8 +4,24 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import FileUpload from "@/components/FileUpload";
 import SessionList from "@/components/SessionList";
-import { getUserId } from "@/lib/client";
 import type { SessionListItem } from "@/types";
+
+function generateUUID(): string {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
+function getUserId(): string {
+  if (typeof window === "undefined") return "";
+  let id = localStorage.getItem("interview_user_id");
+  if (!id) {
+    id = generateUUID();
+    localStorage.setItem("interview_user_id", id);
+  }
+  return id;
+}
 
 export default function HomePage() {
   const router = useRouter();
