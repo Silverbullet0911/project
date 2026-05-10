@@ -63,8 +63,8 @@ export async function buildInterviewSystemPrompt(
     ? `\n## 用户此前面试中已充分训练过的薄弱点（避免重复追问）\n${pastWeaknesses.map((w) => `- ${w}`).join("\n")}`
     : "";
 
-  const topics = attackPlan.required_topics.map((t) => `- [${t.category}] ${t.description}`).join("\n");
-  const points = attackPlan.attack_points.map(
+  const topics = (attackPlan.required_topics || []).map((t) => `- [${t.category}] ${t.description}`).join("\n");
+  const points = (attackPlan.attack_points || []).map(
     (p) => `- [${p.severity}] ${p.weakness}（来源：${p.source}）→ 策略：${p.strategy} | ${p.covered ? "已覆盖" : "未覆盖"}`
   ).join("\n");
 
